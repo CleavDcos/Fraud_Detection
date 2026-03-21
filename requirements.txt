@@ -1,8 +1,10 @@
 fastapi
 uvicorn[standard]
-joblib
+pydantic
 numpy
-scikit-learn
 pandas
+scikit-learn
 scipy
+joblib
 requests
+openai>=1.0.0
