@@ -1,22 +1,20 @@
 import os
-import requests
+import gdown
 
 def download_file(url, save_path):
-    # create folder if not exists
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
-    # 🔥 ALWAYS RE-DOWNLOAD (temporary fix)
+    # extract file ID
+    file_id = url.split("id=")[-1]
+    download_url = f"https://drive.google.com/uc?id={file_id}"
+
+    # always re-download (for now)
     if os.path.exists(save_path):
-        print(f"{save_path} exists. Deleting old file...")
+        print(f"Deleting old file: {save_path}")
         os.remove(save_path)
 
     print(f"Downloading {save_path}...")
 
-    response = requests.get(url)
+    gdown.download(download_url, save_path, quiet=False)
 
-    if response.status_code == 200:
-        with open(save_path, "wb") as f:
-            f.write(response.content)
-        print(f"Saved to {save_path}")
-    else:
-        print(f"Failed to download {url}")
+    print(f"Saved to {save_path}")

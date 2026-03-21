@@ -6,5 +6,5 @@ pandas
 scikit-learn
 scipy
 joblib
-requests
 openai>=1.0.0
+gdown
