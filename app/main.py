@@ -27,21 +27,21 @@ class URLRequest(BaseModel):
 def load_resources():
     global email_model, tfidf_model, url_model
 
-    # DOWNLOAD MODELS
+#domwnload the models
     download_file(
-        "https://drive.google.com/uc?export=download&id=1lscce0n4fCDStrPcnJyPZCBB2bhO8EMt",
-        "app/email_model/models/email_model.pkl"
-    )
+    "EMAIL_MODEL_LINK",
+    "app/email_model/models/email_model.pkl"
+)
 
     download_file(
-    "https://drive.google.com/uc?export=download&id=1mkcsAdk4sjnYtJIG6Jz0I29Yr-IqiyK2",
+    "TFIDF_LINK",
     "app/email_model/models/tfidf.pkl"
 )
 
     download_file(
-        "https://drive.google.com/uc?export=download&id=15xaauIq-wYnAKDFy2SUzdSz-8LbdjFwI",
-        "app/url_model/url_model.pkl"
-    )
+    "URL_MODEL_LINK",
+    "app/url_model/url_model.pkl"
+)
 
     # LOAD MODELS
     from app.email_model.predict import load_model
