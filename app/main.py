@@ -13,7 +13,7 @@ from app.url_model.model import predict_url
 from services.llm_service import generate_explanation
 
 app = FastAPI(title="Fraud Detection API")
-PORT = int(os.environ.get("PORT", 10000))
+
 
 # request schemas
 class EmailRequest(BaseModel):
