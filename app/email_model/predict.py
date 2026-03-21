@@ -1,11 +1,10 @@
 import os
-from pydoc import text
 import joblib
 import numpy as np
 import re
 
-from app.url_model.model import predict_url
 from scipy.sparse import hstack
+from app.url_model.model import predict_url
 
 from app.email_model.utils.text_features import (
     extract_keyword_features,
@@ -13,7 +12,7 @@ from app.email_model.utils.text_features import (
 )
 
 
-
+# LOAD MODEL (used at startup)
 def load_model():
     base_dir = os.path.dirname(__file__)
 
@@ -23,7 +22,7 @@ def load_model():
     return model, tfidf
 
 
-
+# BUILD FEATURES
 def build_features(text, tfidf):
     text = text.lower()
 
@@ -42,7 +41,7 @@ def build_features(text, tfidf):
     return X, manual_dict
 
 
-# give reasons
+# GENERATE REASONS
 def generate_reasons(manual_features):
     reasons = []
 
@@ -67,14 +66,17 @@ def generate_reasons(manual_features):
     return reasons
 
 
-#make prediction
-def predict_email(text):
-    global email_model, tfidf_model
+# EXTRACT URLS
+def extract_urls(text):
+    return re.findall(r'https?://\S+', text)
 
-    X, manual_features = build_features(text, tfidf_model)
 
-    prob = email_model.predict_proba(X)[0][1]
-    pred = email_model.predict(X)[0]
+# MAIN PREDICTION FUNCTIO
+def predict_email(text, model, tfidf, url_model):
+    X, manual_features = build_features(text, tfidf)
+
+    prob = model.predict_proba(X)[0][1]
+    pred = model.predict(X)[0]
 
     reasons = generate_reasons(manual_features)
 
@@ -84,11 +86,12 @@ def predict_email(text):
         "reasons": reasons
     }
 
+    # URL ANALYSIS
     urls = extract_urls(text)
     phishing_urls = []
 
     for url in urls:
-        url_result = predict_url(url)
+        url_result = predict_url(url, url_model)
 
         if url_result["is_phishing"] or url_result["confidence"] >= 0.5:
             phishing_urls.append(url_result)
@@ -99,26 +102,3 @@ def predict_email(text):
     result["phishing_urls"] = phishing_urls
 
     return result
-
-
-#leveraging the url model here to see if url is present in the email
-def extract_urls(text):
-    return re.findall(r'https?://\S+', text)
-
-#perform similarity search
-def search_similar(query, k=3):
-    query_vec = model.encode([query])
-    distances, indices = index.search(query_vec, k)
-
-    results = []
-    for idx in indices[0]:
-        results.append(data[idx])
-
-    return results
-
-if __name__ == "__main__":
-    sample = "URGENT! Your account is suspended. Click here: http://fake-login.com to verify now!!!"
-
-    result = predict_email(sample)
-
-    print(result)

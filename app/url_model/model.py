@@ -8,8 +8,6 @@ from app.url_model.feature_extractor import extract_features
 
 
 
-# LOAD DATA
-
 def load_data():
     phishing = pd.read_csv("data/phishing_urls.csv")
     legit = pd.read_csv("data/legit_urls.csv")
@@ -21,9 +19,6 @@ def load_data():
     return data
 
 
-
-# PREPARE FEATURES
-
 def prepare_data(data):
     X = []
     y = data['label']
@@ -34,13 +29,10 @@ def prepare_data(data):
     return X, y
 
 
-
-
-
 def train_model():
     data = load_data()
 
-    #DATASET
+    # balance dataset
     phishing = data[data['label'] == 1]
     legit = data[data['label'] == 0].sample(len(phishing), random_state=42)
 
@@ -48,15 +40,12 @@ def train_model():
 
     print(f"\nDataset after balancing: {len(phishing)} phishing + {len(legit)} legit")
 
-    # Prepare features
     X, y = prepare_data(data)
 
-    # Train-test split
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
 
-    #IMPROVED MODEL
     model = RandomForestClassifier(
         n_estimators=400,
         max_depth=20,
@@ -67,28 +56,24 @@ def train_model():
 
     model.fit(X_train, y_train)
 
-    # Predictions
     y_pred = model.predict(X_test)
 
-    # Evaluation
     print("\nModel Evaluation:")
     print("Accuracy:", accuracy_score(y_test, y_pred))
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
     print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
-    # Save model
     joblib.dump(model, "app/url_model/url_model.pkl")
     print("\nModel saved!")
 
 
 
-# PREDICT WITH CONFIDENCE
 
-def predict_url(url):
-    global url_model 
+
+def predict_url(url, model):
     features = extract_features(url)
 
-    proba = url_model.predict_proba([features])[0][1]
+    proba = model.predict_proba([features])[0][1]
 
     if proba >= 0.7:
         label = "phishing"

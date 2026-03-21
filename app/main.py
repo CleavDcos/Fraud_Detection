@@ -9,7 +9,7 @@ from app.utils.model_loader import download_file
 
 from app.email_model.predict import predict_email
 from app.url_model.model import predict_url
-from services.vector_store import search_similar
+#from services.vector_store import search_similar
 from services.llm_service import generate_explanation
 
 app = FastAPI(title="Fraud Detection API")
@@ -61,7 +61,7 @@ def analyze_email(request: EmailRequest):
     email = request.text  
  
     #ml prediction
-    prediction = predict_email(email)  
+    prediction = predict_email(email,email_model, tfidf_model,url_model)  
    
     #rag retrieval
     #similar_cases = search_similar(email)
@@ -95,4 +95,4 @@ def analyze_email(request: EmailRequest):
 
 @app.post("/predict/url")
 def predict_url_route(request: URLRequest):
-    return predict_url(request.url)
+    return predict_url(request.url, url_model)
