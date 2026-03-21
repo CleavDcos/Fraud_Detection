@@ -85,10 +85,10 @@ def train_model():
 # PREDICT WITH CONFIDENCE
 
 def predict_url(url):
-    model = joblib.load("app/url_model/url_model.pkl")
+    global url_model 
     features = extract_features(url)
 
-    proba = model.predict_proba([features])[0][1]
+    proba = url_model.predict_proba([features])[0][1]
 
     if proba >= 0.7:
         label = "phishing"

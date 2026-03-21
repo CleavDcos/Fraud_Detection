@@ -69,12 +69,12 @@ def generate_reasons(manual_features):
 
 #make prediction
 def predict_email(text):
-    model, tfidf = load_model()
+    global email_model, tfidf_model
 
-    X, manual_features = build_features(text, tfidf)
+    X, manual_features = build_features(text, tfidf_model)
 
-    prob = model.predict_proba(X)[0][1]
-    pred = model.predict(X)[0]
+    prob = email_model.predict_proba(X)[0][1]
+    pred = email_model.predict(X)[0]
 
     reasons = generate_reasons(manual_features)
 
@@ -89,14 +89,15 @@ def predict_email(text):
 
     for url in urls:
         url_result = predict_url(url)
-        
-        print("URL result:", url_result)
 
         if url_result["is_phishing"] or url_result["confidence"] >= 0.5:
             phishing_urls.append(url_result)
-        if phishing_urls:
-            reasons.append("Suspicious or phishing URL detected in email")
+
+    if phishing_urls:
+        reasons.append("Suspicious or phishing URL detected in email")
+
     result["phishing_urls"] = phishing_urls
+
     return result
 
 
