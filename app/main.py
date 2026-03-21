@@ -34,9 +34,9 @@ def load_resources():
     )
 
     download_file(
-        "https://drive.google.com/uc?export=download&id=1MKkHm1it6pk8Kg8cdhKPiXiWXTWD6IxJ",
-        "app/email_model/models/tfidf.pkl"
-    )
+    "https://drive.google.com/uc?export=download&id=1mkcsAdk4sjnYtJIG6Jz0I29Yr-IqiyK2",
+    "app/email_model/models/tfidf.pkl"
+)
 
     download_file(
         "https://drive.google.com/uc?export=download&id=15xaauIq-wYnAKDFy2SUzdSz-8LbdjFwI",

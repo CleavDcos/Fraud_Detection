@@ -5,10 +5,10 @@ def download_file(url, save_path):
     # create folder if not exists
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
-    # skip if already exists
+    # 🔥 ALWAYS RE-DOWNLOAD (temporary fix)
     if os.path.exists(save_path):
-        print(f"{save_path} already exists. Skipping download.")
-        return
+        print(f"{save_path} exists. Deleting old file...")
+        os.remove(save_path)
 
     print(f"Downloading {save_path}...")
 
