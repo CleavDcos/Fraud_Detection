@@ -1,9 +1,8 @@
-import os
 from fastapi import FastAPI
 from pydantic import BaseModel
+import joblib
 
-from app.utils.model_loader import download_file
-from app.email_model.predict import predict_email
+from app.email_model.predict import predict_email, load_model
 from app.url_model.model import predict_url
 from services.llm_service import generate_explanation
 
@@ -15,7 +14,9 @@ tfidf_model = None
 url_model = None
 
 
-
+# ----------------------------
+# REQUEST MODELS
+# ----------------------------
 class EmailRequest(BaseModel):
     text: str
 
@@ -24,47 +25,35 @@ class URLRequest(BaseModel):
     url: str
 
 
-
+# ----------------------------
+# STARTUP: LOAD MODELS
+# ----------------------------
 @app.on_event("startup")
 def load_resources():
     global email_model, tfidf_model, url_model
 
     try:
-        print("Starting resource loading...")
-
-        # Ensure directories exist
-        os.makedirs("app/email_model/models", exist_ok=True)
-        os.makedirs("app/url_model", exist_ok=True)
-
-        # Get env variables
-        email_link = os.getenv("EMAIL_MODEL_LINK")
-        tfidf_link = os.getenv("TFIDF_LINK")
-        url_link = os.getenv("URL_MODEL_LINK")
-
-        if not email_link or not tfidf_link or not url_link:
-            print("⚠️ Model links not found in environment variables")
-            return
-
-        # Download models
-        download_file(email_link, "app/email_model/models/email_model.pkl")
-        download_file(tfidf_link, "app/email_model/models/tfidf.pkl")
-        download_file(url_link, "app/url_model/url_model.pkl")
+        print("🔄 Loading models locally...")
 
         # Load email model
-        from app.email_model.predict import load_model
         email_model, tfidf_model = load_model()
 
         # Load URL model
-        import joblib
         url_model = joblib.load("app/url_model/url_model.pkl")
 
-        print("All models loaded successfully")
+        # Debug check (VERY IMPORTANT)
+        print("✅ URL Model expects:", url_model.n_features_in_)
+
+        print("✅ All models loaded successfully")
 
     except Exception as e:
-        print("STARTUP ERROR:", str(e))
+        print("❌ STARTUP ERROR:", str(e))
+        raise e
 
 
-
+# ----------------------------
+# HEALTH CHECK
+# ----------------------------
 @app.get("/")
 def home():
     return {"message": "Fraud Detection API is running"}
@@ -76,21 +65,24 @@ def home():
 @app.post("/predict/email")
 def analyze_email(request: EmailRequest):
 
-    if not email_model or not tfidf_model:
+    if email_model is None or tfidf_model is None:
         return {"error": "Email model not loaded"}
 
-    email = request.text
-
     try:
-        prediction = predict_email(email, email_model, tfidf_model, url_model)
+        prediction = predict_email(
+            request.text,
+            email_model,
+            tfidf_model,
+            url_model
+        )
 
-        # RAG (disabled for now)
+        # Placeholder for RAG (future)
         similar_cases = []
         reasons = []
         confidence = 0
 
         llm_explanation = generate_explanation(
-            email,
+            request.text,
             prediction,
             reasons,
             similar_cases
@@ -116,7 +108,7 @@ def analyze_email(request: EmailRequest):
 @app.post("/predict/url")
 def predict_url_route(request: URLRequest):
 
-    if not url_model:
+    if url_model is None:
         return {"error": "URL model not loaded"}
 
     try:

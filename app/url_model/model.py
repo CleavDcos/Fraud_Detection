@@ -58,6 +58,8 @@ def train_model():
 
     y_pred = model.predict(X_test)
 
+    print("Feature length during training:", len(X[0]))
+    print("Model expects after training:", model.n_features_in_)
     print("\nModel Evaluation:")
     print("Accuracy:", accuracy_score(y_test, y_pred))
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
@@ -71,20 +73,35 @@ def train_model():
 
 
 def predict_url(url, model):
-    features = extract_features(url)
+    try:
+        if not url or not isinstance(url, str):
+            raise ValueError("Invalid URL input")
 
-    proba = model.predict_proba([features])[0][1]
+        features = extract_features(url)
 
-    if proba >= 0.7:
-        label = "phishing"
-    elif proba >= 0.4:
-        label = "suspicious"
-    else:
-        label = "legit"
+        # Convert to Python float
+        proba = float(model.predict_proba([features])[0][1])
 
-    return {
-        "url": url,
-        "label": label,
-        "confidence": float(proba),
-        "is_phishing": proba >= 0.7
-    }
+        if proba >= 0.7:
+            label = "phishing"
+        elif proba >= 0.4:
+            label = "suspicious"
+        else:
+            label = "legit"
+
+        return {
+            "url": str(url),                      # ensure string
+            "label": str(label),                  # ensure string
+            "confidence": float(proba),           # ensure float
+            "is_phishing": bool(proba >= 0.7)     # ensure bool
+        }
+
+    except Exception as e:
+        return {
+            "error": str(e),
+            "url": str(url)
+        }
+
+
+if __name__ == "__main__":
+    train_model()

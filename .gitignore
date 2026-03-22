@@ -10,7 +10,7 @@ __pycache__/
 *.json
 
 # ML models
-*.pkl
+#*.pkl
 *.joblib
 *.h5
 
